@@ -1,14 +1,13 @@
 package resources
 
 import (
-	"io/ioutil"
 	"strings"
 	"testing"
 
-	"github.com/omeid/go-resources/testdata/generated"
+	"github.com/cugu/go-resources/testdata/generated"
 )
 
-//go:generate go build -o testdata/resources github.com/omeid/go-resources/cmd/resources
+//go:generate go build -o testdata/resources github.com/cugu/go-resources/cmd/resources
 //go:generate testdata/resources -declare -package generated -output testdata/generated/store_prod.go  testdata/*.txt testdata/*.sql
 
 func TestGenerated(t *testing.T) {
@@ -21,16 +20,10 @@ func TestGenerated(t *testing.T) {
 		{name: "query.sql", snippet: `drop table "files";`},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			f, err := generated.FS.Open("/testdata/" + tt.name)
+			content, ok := generated.FS.Files["/testdata/"+tt.name]
 
-			if err != nil {
-				t.Fatalf("expected no error opening file, got %v", err)
-			}
-			defer f.Close()
-
-			content, err := ioutil.ReadAll(f)
-			if err != nil {
-				t.Fatalf("expected no error reading file, got %v", err)
+			if !ok {
+				t.Fatalf("expected no error opening file")
 			}
 
 			if !strings.Contains(string(content), tt.snippet) {

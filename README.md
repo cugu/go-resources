@@ -1,4 +1,6 @@
-# Resources [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/omeid/go-resources)  [![Build Status](https://travis-ci.org/omeid/go-resources.svg?branch=master)](https://travis-ci.org/omeid/go-resources) [![Go Report Card](https://goreportcard.com/badge/github.com/omeid/go-resources?bust=true)](https://goreportcard.com/report/github.com/omeid/go-resources)
+This is a simplified fork of github.com/omeid/go-resources/cmd/resources
+
+# Resources [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/cugu/go-resources)  [![Build Status](https://travis-ci.org/cugu/go-resources.svg?branch=master)](https://travis-ci.org/cugu/go-resources) [![Go Report Card](https://goreportcard.com/badge/github.com/cugu/go-resources?bust=true)](https://goreportcard.com/report/github.com/cugu/go-resources)
 Unfancy resources embedding with Go.
 
 - No blings.
@@ -16,7 +18,7 @@ with having dependencies for your end project. Not this time.
 Just go get it!
 
 ```sh
-$ go get github.com/omeid/go-resources/cmd/resources
+$ go get github.com/cugu/go-resources/cmd/resources
 ```
 
 ### Usage
@@ -55,17 +57,9 @@ be represented as follows:
 
 ``` go
 FS = &FileSystem{
-  "/hello.txt": File{
-    data: []byte{
+  "/hello.txt": []byte{
       0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64,
       0x21,
-    },
-    fi: FileInfo{
-      name:    "hello.txt",
-      size:    13,
-      modTime: time.Unix(0, 1504640959536230658),
-      isDir:   false,
-    },
   },
 }
 ```
@@ -90,64 +84,10 @@ package main
 import "importpath/to/assets"
 
 func main() {
-  data, err := assets.FS.Open("your/files/here")
+  data, ok := assets.FS["your/files/here"]
   // ...
 }
 ```
-
-##### "Live" development of resources
-
-For fast iteration and improvement of your resources, you can work
-around the compile with the following technique:
-
-First, create a normal `main.go`:
-
-```go
-package main
-
-import "net/http"
-
-var Assets http.FileSystem
-
-func main() {
-  if Assets == nil {
-    panic("No Assets. Have you generated the resources?")
-  }
-
-  // use Assets here
-}
-```
-
-Then, add a second file in the same package (`main` here), with the
-following content:
-
-```go
-// +build !embed
-
-package main
-
-import (
-	"net/http"
-
-	"github.com/omeid/go-resources/live"
-)
-
-var Assets = live.Dir("./public")
-```
-
-Now when you build or run your project, you will have files directly
-served from `./public` directory.
-
-To create a *production build*, i.e. one with the embedded files, build
-the resouces with `-tag=embed` and add the `embed` tag to `go build`:
-
-```sh
-$ resources -output=public_resources.go -var=Assets -tag=embed public/*
-$ go build -tags=embed
-```
-
-Now your resources should be embedded with your program!
-Of course, you may use any `var` or `tag` name you please.
 
 ### Go Generate
 
@@ -161,43 +101,10 @@ scope of `go generate`.
 Second, you're unnecessarily slowing down code iterations by blocking
 `go generate` for resource generation.
 
-# Resources, The Library [![GoDoc](https://godoc.org/github.com/omeid/go-resources?status.svg)](https://godoc.org/github.com/omeid/go-resources)
+# Resources, The Library [![GoDoc](https://godoc.org/github.com/cugu/go-resources?status.svg)](https://godoc.org/github.com/cugu/go-resources)
 
-The resource generator is written as a library and isn't bound to
-filesystem by the way of accepting files in the form
-
-```go
-type File interface {
-      io.Reader
-      Stat() (os.FileInfo, error)
-}
-```
-
-along with a helper method that adds files from filesystem.
-
-This allows to integrate `resources` with ease in your workflow when the
-when the provided command doesn't fit well, for an example see the [Gonzo
-binding](https://github.com/go-gonzo/resources/blob/master/resources.go)
-`resources`.
-
-Please refer to the [GoDoc](https://godoc.org/github.com/omeid/go-resources)
+Please refer to the [GoDoc](https://godoc.org/github.com/cugu/go-resources)
 for complete documentation.
-
-### Strings
-
-The generated FileSystem also implements an `String(string) (string, bool)` method that allows you to read the content of a file as string, to use that
-instead of defining your file Assets variable as simply an http.FileSystem, do the following:
-
-```go
-type Resources interface {
-	http.FileSystem
-	String(string) (string, bool)
-}
-
-var Assets Resources
-```
-
-Now you can call `Assets.String(someFile)` and get the content as string with a boolean value indicating whatever the file was found or not.
 
 ---
 
@@ -207,12 +114,8 @@ Please consider opening an issue first, or just send a pull request. :)
 
 ### Credits
 
-See [Contributors](https://github.com/omeid/go-resources/graphs/contributors).
+This is a fork of github.com/omeid/go-resources/cmd/resources
 
 ### LICENSE
 
 [MIT](LICENSE).
-
-### TODO
-
-- Add tests.

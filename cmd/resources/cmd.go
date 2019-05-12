@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/omeid/go-resources"
+	"github.com/cugu/go-resources"
 )
 
 var (
