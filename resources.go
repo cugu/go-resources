@@ -111,15 +111,25 @@ var (
 func reader(input io.Reader, indent int) (string, error) {
 	var (
 		buff      bytes.Buffer
+		strbuf    strings.Builder
+		isString  bool
 		err       error
 		curblock  = 0
 		linebreak = "\n" + strings.Repeat("\t", indent)
 	)
 
 	b := make([]byte, BlockWidth)
+	isString = true
 
 	for n, e := input.Read(b); e == nil; n, e = input.Read(b) {
 		for i := 0; i < n; i++ {
+			if isString {
+				if isGoASCII(rune(b[i])) {
+					strbuf.WriteByte(b[i])
+				} else {
+					isString = false
+				}
+			}
 			_, e = fmt.Fprintf(&buff, "0x%02x,", b[i])
 			if e != nil {
 				err = e
@@ -135,7 +145,18 @@ func reader(input io.Reader, indent int) (string, error) {
 		}
 	}
 
-	return buff.String(), err
+	if isString {
+		return "[]byte(`" + strbuf.String() + "`),", err
+	}
+
+	return "{" + linebreak + buff.String() + "\n" + strings.Repeat("\t", indent-1) + "},", err
+}
+
+func isGoASCII(b rune) bool {
+	if ((' ' <= b && b <= '~') || b == '\n' || b == '\t') && b != '`' {
+		return true
+	}
+	return false
 }
 
 func init() {
@@ -143,9 +164,7 @@ func init() {
 	pkg = template.Must(pkg.New("pkg").Parse(pkgTemplate))
 }
 
-const fileTemplate = `[]byte{
-				{{ reader . 5 }}
-			}`
+const fileTemplate = `{{ reader . 4 }}`
 
 const pkgTemplate = `{{ if .Tag }}// +build {{ .Tag }}
 
@@ -160,8 +179,8 @@ type FileSystem struct {
 
 func init() {
 	{{ .Var }} = &FileSystem{
-		Files: map[string][]byte{
-			{{range $path, $file := .Files }}"/{{ $path }}": {{ template "file" $file }},{{ end }}
+		Files: map[string][]byte{ {{range $path, $file := .Files }}
+			"/{{ $path }}": {{ template "file" $file }}{{ end }}
 		},
 	}
 }
