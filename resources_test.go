@@ -1,23 +1,27 @@
 package resources
 
 import (
-	"strings"
+	"bytes"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/cugu/go-resources/testdata/generated"
 )
 
 //go:generate go build -o testdata/resources github.com/cugu/go-resources/cmd/resources
-//go:generate testdata/resources -declare -package generated -output testdata/generated/store_prod.go  testdata/*.txt testdata/*.sql
+//go:generate testdata/resources -declare -package generated -output testdata/generated/store_prod.go  testdata/*.txt testdata/*.sql testdata/*.bin
 
 func TestGenerated(t *testing.T) {
 	for _, tt := range []struct {
-		name    string
-		snippet string
+		name string
 	}{
-		{name: "test.txt", snippet: "this is test.txt"},
-		{name: "patrick.txt", snippet: "no, this is patrick!"},
-		{name: "query.sql", snippet: `drop table "files";`},
+		{name: "test.txt"},
+		{name: "patrick.txt"},
+		{name: "query.sql"},
+		{name: "123.bin"},
+		{name: "12.bin"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			content, ok := generated.FS.Files["/testdata/"+tt.name]
@@ -26,8 +30,19 @@ func TestGenerated(t *testing.T) {
 				t.Fatalf("expected no error opening file")
 			}
 
-			if !strings.Contains(string(content), tt.snippet) {
-				t.Errorf("expected to find snippet %q in file", tt.snippet)
+			f, err := os.Open(filepath.Join("testdata", tt.name))
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer f.Close()
+
+			data, err := ioutil.ReadAll(f)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if bytes.Compare(content, data) != 0 {
+				t.Errorf("expected to find snippet %x in file %x", content, data)
 			}
 		})
 	}
