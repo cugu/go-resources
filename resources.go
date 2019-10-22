@@ -153,7 +153,7 @@ func reader(input io.Reader, indent int) (string, error) {
 }
 
 func isGoASCII(b rune) bool {
-	if ((' ' <= b && b <= '~') || b == '\n' || b == '\t') && b != '`' {
+	if ((' ' <= b && b <= '~') || b == '\n' || b == '\t' || b == '\r') && b != '`' {
 		return true
 	}
 	return false
