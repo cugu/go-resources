@@ -5,6 +5,7 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -61,7 +62,11 @@ func main() {
 			log.Fatal(err)
 		}
 		for _, m := range matches {
-			files[m] = nope{}
+			info, err := os.Stat(m)
+
+			if !os.IsNotExist(err) && !info.IsDir() {
+				files[m] = nope{}
+			}
 		}
 	}
 
