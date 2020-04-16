@@ -3,7 +3,6 @@ package resources
 import (
 	"bytes"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -11,7 +10,7 @@ import (
 )
 
 //go:generate go build -o testdata/resources github.com/cugu/go-resources/cmd/resources
-//go:generate testdata/resources -declare -package generated -output testdata/generated/store_prod.go  testdata/*.txt testdata/*.sql testdata/*.bin
+//go:generate testdata/resources -package generated -output testdata/generated/store_prod.go  testdata/*.txt testdata/*.sql testdata/*.bin
 
 func TestGenerated(t *testing.T) {
 	for _, tt := range []struct {
@@ -24,25 +23,19 @@ func TestGenerated(t *testing.T) {
 		{name: "12.bin"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			content, ok := generated.FS.Files["/testdata/"+tt.name]
+			content, ok := generated.FS["/testdata/"+tt.name]
 
 			if !ok {
 				t.Fatalf("expected no error opening file")
 			}
 
-			f, err := os.Open(filepath.Join("testdata", tt.name))
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer f.Close()
-
-			data, err := ioutil.ReadAll(f)
+			data, err := ioutil.ReadFile(filepath.Join("testdata", tt.name))
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			if bytes.Compare(content, data) != 0 {
-				t.Errorf("expected to find snippet %x in file %x", content, data)
+				t.Errorf("expected to find snippet '%x', got: '%x'", data, content)
 			}
 		})
 	}
