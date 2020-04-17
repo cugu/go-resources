@@ -68,6 +68,10 @@ func (p *Package) Build(out io.Writer) error {
 // Write builds the package (via Build) and writes the output the the file
 // given by the path argument.
 func (p *Package) Write(path string) error {
+	err := os.MkdirAll(filepath.Dir(path), 0700)
+	if err != nil {
+		return err
+	}
 	f, err := os.Create(path)
 	if err != nil {
 		return err
