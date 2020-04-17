@@ -44,20 +44,20 @@ type Package struct {
 }
 
 // Add a file to the package at the give path.
-func (p *Package) Add(path string, file File) error {
-	path = filepath.ToSlash(path)
-	p.Files[path] = file
+func (p *Package) Add(name string, file File) error {
+	name = filepath.ToSlash(name)
+	p.Files[name] = file
 	return nil
 }
 
 // AddFile is a helper function that adds the files from the path into the
 // package under the path file.
-func (p *Package) AddFile(path string, file string) error {
-	f, err := os.Open(file)
+func (p *Package) AddFile(name, path string) error {
+	f, err := os.Open(path)
 	if err != nil {
 		return err
 	}
-	return p.Add(path, f)
+	return p.Add(name, f)
 }
 
 // Build compiles the package and writes it into an io.Writer.

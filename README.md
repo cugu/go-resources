@@ -26,10 +26,6 @@ $ go get github.com/cugu/go-resources/cmd/resources
 ```
 $ resources -h
 Usage resources:
-  -declare
-        whether to declare the -var (default false)
-  -fmt
-        run output through gofmt, this is slow for huge files (default false)
   -output filename
         filename to write the output to
   -package name
@@ -40,8 +36,6 @@ Usage resources:
         path prefix to remove from the resulting file path in the virtual filesystem
   -var name
         name of the variable to assign the virtual filesystem to (default "FS")
-  -width number
-        number of content bytes per line in generetated file (default 12)
 ```
 
 ### Optimization
@@ -56,7 +50,7 @@ actual byte slice. For example, a file with content `Hello, world!` will
 be represented as follows:
 
 ``` go
-FS = &FileSystem{
+var FS = map[string][]byte{
   "/hello.txt": []byte{
       0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64,
       0x21,
@@ -75,7 +69,7 @@ to wait for the resources to be compiled with every change.
 
 ``` sh
 mkdir -p assets
-resources -declare -var=FS -package=assets -output=assets/assets.go your/files/here
+resources -var=FS -package=assets -output=assets/assets.go your/files/here
 ```
 
 ``` go
@@ -89,33 +83,6 @@ func main() {
 }
 ```
 
-### Go Generate
-
-There is a few reasons to avoid resource embedding in `go generate`.
-
-First `go generate` is for generating Go source code from your code,
-generally the resources you want to embed aren't effected by the Go
-source directly and as such generating resources are slightly out of the
-scope of `go generate`.
-
-Second, you're unnecessarily slowing down code iterations by blocking
-`go generate` for resource generation.
-
-# Resources, The Library [![GoDoc](https://godoc.org/github.com/cugu/go-resources?status.svg)](https://godoc.org/github.com/cugu/go-resources)
-
-Please refer to the [GoDoc](https://godoc.org/github.com/cugu/go-resources)
-for complete documentation.
-
----
-
-### Contributing
-
-Please consider opening an issue first, or just send a pull request. :)
-
 ### Credits
 
 This is a fork of github.com/omeid/go-resources/cmd/resources
-
-### LICENSE
-
-[MIT](LICENSE).
